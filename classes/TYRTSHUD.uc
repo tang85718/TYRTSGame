@@ -1,31 +1,19 @@
-class TYRTSMoblieHUD extends MobileHUD;
+class TYRTSHUD extends MobileHUD;
 
-var Font PlayerFont;
+var Font  PlayerFont;
 var float PlayerNameScale;
 
 function DrawHUD()
 {
 	local float		    XL, YL, YPos;
-//	local Vector2D      TextSize;
 	local TYRTSNPCPawn  P;
-
+	
 	super.DrawHUD();
 	foreach WorldInfo.AllPawns(class'TYRTSNPCPawn', P)
 	{
-// 		// 描画玩家的生命值
-// 		Canvas.Font = PlayerFont;
-// 		Canvas.SetDrawColorStruct(GreenColor);
-// 		Canvas.TextSize(P.Health, TextSize.X, TextSize.Y);
-// 		Canvas.SetPos(96 - (TextSize.X * PlayerNameScale / RatioX),0);
-// 		Canvas.DrawText(P.Health,,PlayerNameScale / RatioX,PlayerNameScale / RatioY);
-// 
-// 		// 描画玩家名称
-//  		Canvas.SetPos(0, SizeY - 64);
-//  		Canvas.TextSize(P.Tag, TextSize.X, TextSize.Y);
-//  		Canvas.SetPos(128 - ((TextSize.X * PlayerNameScale / RatioX) / 2), SizeY - 28 - ((TextSize.Y * PlayerNameScale / RatioY) / 2));
-//  		Canvas.DrawText(P.Tag,,PlayerNameScale / RatioX,PlayerNameScale / RatioY);
-		RenderThreeDeeBox(P);
-		RenderThreeDeeCircle(P);
+		RenderStatusBar(P);
+ 		RenderThreeDeeBox(P);
+// 		RenderThreeDeeCircle(P);
 	}
 
 	Canvas.Font = class'Engine'.Static.GetTinyFont();
@@ -33,6 +21,38 @@ function DrawHUD()
 	Canvas.StrLen("X", XL, YL);
 	YPos = 0;
 	ShowDebugInfo(YL, YPos);
+}
+
+function RenderStatusBar(TYRTSNPCPawn Pawn)
+{
+	local Box ComponentsBoundingBox;
+	local Vector StatusBarBeginCoordinate, StatusBarEndCoordinate;
+	local Vector ScreenBeginPos, ScreenEndPos;
+	local float  StatusBarWidth;
+	if (Pawn == None)
+	{
+		return;
+	} 
+
+	Pawn.GetComponentsBoundingBox(ComponentsBoundingBox);
+
+	// 正解
+	StatusBarBeginCoordinate.X = ComponentsBoundingBox.Max.X;
+	StatusBarBeginCoordinate.Y = ComponentsBoundingBox.Min.Y;
+	StatusBarBeginCoordinate.Z = ComponentsBoundingBox.Max.Z;
+
+	StatusBarEndCoordinate.X = ComponentsBoundingBox.Max.X;
+	StatusBarEndCoordinate.Y = ComponentsBoundingBox.Max.Y;
+	StatusBarEndCoordinate.Z = ComponentsBoundingBox.Max.Z;
+
+	ScreenBeginPos = Canvas.Project(StatusBarBeginCoordinate);
+	ScreenEndPos = Canvas.Project(StatusBarEndCoordinate);
+
+	ScreenBeginPos.Y -= Pawn.MoviePlayer.Height;
+	StatusBarWidth = ScreenEndPos.X - ScreenBeginPos.X;
+
+	Pawn.MoviePlayer.SetPosition(ScreenBeginPos);
+	Pawn.MoviePlayer.SetStatusBarWidth(StatusBarWidth);
 }
 
 function RenderThreeDeeCircle(Actor Actor)
@@ -72,7 +92,7 @@ function RenderThreeDeeCircle(Actor Actor)
     }
     else
     {
-      Draw3DLine(Offsets[i], Offsets[i + 1], class'HUD'.default.WhiteColor);
+      Draw3DLine(Offsets[i], Offsets[i + 1], class'HUD'.default.GreenColor);
     }
   }
 }
@@ -141,42 +161,6 @@ function RenderThreeDeeBox(Actor Actor)
 	{
 		Draw3DLine(BoundingBoxCoordinates[i], BoundingBoxCoordinates[i + 4], class'HUD'.default.GreenColor);
 	}
-}
-
-/**
- * 在需要的画布位置处描画一个拉伸的CanvasIcon 。
- */
-final function DrawIconStretched(CanvasIcon Icon, float X, float Y, optional float ScaleX, optional float ScaleY)
-{
-	if (Icon.Texture != None)
-	{
-		// 验证属性是否有效
-		if (ScaleX <= 0.f)
-		{
-			ScaleX = 1.f;
-		}
-
-		if (ScaleY <= 0.f)
-		{
-			ScaleY = 1.f;
-		}
-
-		if (Icon.UL == 0.f)
-		{
-			Icon.UL = Icon.Texture.GetSurfaceWidth();
-		}
-
-		if (Icon.VL == 0.f)
-		{
-			Icon.VL = Icon.Texture.GetSurfaceHeight();
-		}
-
-		// 设置画布位置
-		Canvas.SetPos(X, Y);
-
-		// 描画贴图
-		Canvas.DrawTileStretched(Icon.Texture, Abs(Icon.UL) * ScaleX, Abs(Icon.VL) * ScaleY, Icon.U, Icon.V, Icon.UL, Icon.VL,, true, true);
-   }
 }
 
 DefaultProperties

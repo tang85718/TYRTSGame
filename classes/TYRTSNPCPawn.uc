@@ -1,5 +1,21 @@
 class TYRTSNPCPawn extends MobilePlaceablePawn;
 
+var             TYHealthBarMoviePlayer  MoviePlayer;
+var(HealthBar)  SwfMovie                SwfAsset;
+
+event PostBeginPlay()
+{
+	Super.PostBeginPlay();
+
+	if (SwfAsset != none)
+	{
+		MoviePlayer = new class'TYHealthBarMoviePlayer'; 
+		MoviePlayer.MovieInfo = SwfAsset; 
+		MoviePlayer.SetTimingMode(TM_Real); 
+		MoviePlayer.Start(True);
+	}
+}
+
 DefaultProperties
 {
 	//设置默认的NPC网格物体
